@@ -1,0 +1,19 @@
+# Definition of the OpenStack environment variables
+variables:
+    - key: openstack_user_name
+      value: <openstack_user_name>
+
+    - key: openstack_tenant_name
+      value: <openstack_tenant_name>
+
+    - key: openstack_password
+      value: <openstack_password>
+
+    - key: openstack_auth_url
+      value: <openstack_auth_url>
+
+    - key: openstack_region
+      value : <openstack_region>
+
+    - key: openstack_domain_name
+      value: <openstack_domain_name>
