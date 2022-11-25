@@ -10,13 +10,12 @@ resource "openstack_blockstorage_volume_v2" "volume" {
 locals {
   template_volume = templatefile("${path.module}/../templates/volume.tftpl",
     {
-      openstack_user_name = var.openstack_user_name,
-      openstack_tenant_name = var.openstack_tenant_name,
-      openstack_password = var.openstack_password,
-      openstack_auth_url = var.openstack_auth_url
-      openstack_region = var.openstack_region
-      openstack_domain_name = var.openstack_domain_name
-      openstack_flavor = var.openstack_flavor,
+      openstack_user_name = local.list_as_map["openstack_user_name"],
+      openstack_tenant_name = local.list_as_map["openstack_tenant_name"],
+      openstack_password = local.list_as_map["openstack_password"],
+      openstack_auth_url = local.list_as_map["openstack_auth_url"],
+      openstack_region = local.list_as_map["openstack_region"],
+      openstack_domain_name = local.list_as_map["openstack_domain_name"],
       volume_list = [
         {
           (openstack_blockstorage_volume_v2.volume["vol1"].name) = openstack_blockstorage_volume_v2.volume["vol1"].id
@@ -31,6 +30,6 @@ locals {
 
 resource "local_file" "volume__file" {
   content = local.template_volume
-  filename = "../servers/terraform.out"
+  filename = "../servers/terraform.tfvars"
   file_permission = "0600"
 }
