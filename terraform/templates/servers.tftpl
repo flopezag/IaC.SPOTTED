@@ -65,8 +65,9 @@ variable "volumes" {
   description = "Volumes"
   type = map(
     object({
-      vol_id = list(string),
-      vol_name   = string
+      vol_id = string,
+      vol_name = string,
+      vol_vm = string
     })
   )
   default = {
@@ -77,15 +78,5 @@ variable "volumes" {
 %{ endfor ~}
     }
 %{ endfor ~}
-
-
-    vol1 = {
-        volume_id = "d1ddaa70-d05f-410d-bced-a328cc1a3a64"
-        vm        = "vm1"
-    }
-    vol2 = {
-        volume = "f8e89c54-e017-49c2-b181-0772520dafd3"
-        vm     = "vm2"
-    }
   }
 }

@@ -17,27 +17,7 @@ module "yaml_json_multidecoder" {
   filepaths = ["../config/config1.yml"]
 }
 
-output "config_variables" {
-  value = module.yaml_json_multidecoder.files.config1.variables
-}
-
-output "config_volumes" {
-  value = module.yaml_json_multidecoder.files.config1.volumes
-}
-
-output "config_vms" {
-  value = module.yaml_json_multidecoder.files.config1.vms
-}
-
 locals {
   vol_keys = keys(module.yaml_json_multidecoder.files.config1.volumes)
   server_keys = keys(module.yaml_json_multidecoder.files.config1.vms)
-}
-
-output "vol_keys" {
-  value = local.vol_keys
-}
-
-output "otro" {
-  value = module.yaml_json_multidecoder.files.config1.vms.vm1.id
 }

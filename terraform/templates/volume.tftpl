@@ -4,9 +4,3 @@ openstack_password = "${openstack_password}"
 openstack_auth_url = "${openstack_auth_url}"
 openstack_region = "${openstack_region}"
 openstack_domain_name = "${openstack_domain_name}"
-
-%{ for volume in volume_list ~}
-%{ for volume_name, volume_id in volume ~}
-openstack_volume_${volume_name} = "${volume_id}"
-%{ endfor ~}
-%{ endfor ~}

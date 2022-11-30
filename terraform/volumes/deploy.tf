@@ -7,6 +7,10 @@ resource "openstack_blockstorage_volume_v2" "volume" {
   size                = module.yaml_json_multidecoder.files.config1.volumes[local.vol_keys[count.index]].size
 }
 
+
+#
+# Generate the output file for servers creation
+#
 resource "null_resource" "volume_list" {
   count = length(local.vol_keys)
 
@@ -17,34 +21,26 @@ resource "null_resource" "volume_list" {
   }
 }
 
-# Generate the output file for servers creation
-#locals {
-#  template_volume = templatefile("${path.module}/../templates/volume.tftpl",
-#    {
-#      openstack_user_name = local.settings.variables.openstack_user_name,
-#      openstack_tenant_name = local.settings.variables.openstack_tenant_name,
-#      openstack_password = local.settings.variables.openstack_password,
-#      openstack_auth_url = local.settings.variables.openstack_auth_url,
-#      openstack_region = local.settings.variables.openstack_region,
-#      openstack_domain_name = local.settings.variables.openstack_domain_name,
-#      volume_list = [
-#        {
-#          (openstack_blockstorage_volume_v2.volume["vol1"].name) = openstack_blockstorage_volume_v2.volume["vol1"].id
-#        },
-#        {
-#          (openstack_blockstorage_volume_v2.volume["vol2"].name) = openstack_blockstorage_volume_v2.volume["vol2"].id
-#        }
-#      ]
-#    }
-#  )
-#}
-#
-#resource "local_file" "volume__file" {
-#  content = local.template_volume
-#  filename = "../servers/terraform.tfvars"
-#  file_permission = "0600"
-#}
-#
+locals {
+  template_volume = templatefile("${path.module}/../templates/volume.tftpl",
+    {
+      openstack_user_name = module.yaml_json_multidecoder.files.config1.variables.openstack_user_name,
+      openstack_tenant_name = module.yaml_json_multidecoder.files.config1.variables.openstack_tenant_name,
+      openstack_password = module.yaml_json_multidecoder.files.config1.variables.openstack_password,
+      openstack_auth_url = module.yaml_json_multidecoder.files.config1.variables.openstack_auth_url,
+      openstack_region = module.yaml_json_multidecoder.files.config1.variables.openstack_region,
+      openstack_domain_name = module.yaml_json_multidecoder.files.config1.variables.openstack_domain_name,
+    }
+  )
+}
+
+resource "local_file" "volume__file" {
+  content = local.template_volume
+  filename = "../servers/terraform.tfvars"
+  file_permission = "0600"
+}
+
+
 locals {
   template_servers = templatefile("${path.module}/../templates/servers.tftpl",
     {
@@ -66,13 +62,8 @@ locals {
   )
 }
 
-
 resource "local_file" "servers__file" {
   content = local.template_servers
   filename = "../servers/variables.tf"
   file_permission = "0600"
-}
-
-output "quest" {
-  value = null_resource.volume_list.*.triggers
 }
