@@ -71,7 +71,7 @@ resource "openstack_compute_floatingip_v2" "spotted_floating_ip" {
 }
 
 #
-# Create the VM Instance for Security Scan
+# Create the VM Instances for SPOTTED
 #
 resource "openstack_compute_instance_v2" "spotted_virtual_machines" {
   for_each = var.vms
@@ -94,7 +94,7 @@ resource "openstack_compute_instance_v2" "spotted_virtual_machines" {
 
 
 #
-# Associate public IPs to the Docker Swarm Master
+# Associate public IPs to the virtual machines
 #
 resource "openstack_compute_floatingip_associate_v2" "associate_floating_ip" {
   for_each = var.vms
@@ -103,40 +103,33 @@ resource "openstack_compute_floatingip_associate_v2" "associate_floating_ip" {
   instance_id = openstack_compute_instance_v2.spotted_virtual_machines[each.value.id].id
 }
 
+
+#
+# Attach volumes to the servers
+#
+resource "openstack_compute_volume_attach_v2" "attachments" {
+  for_each = var.vms
+
+  instance_id = openstack_compute_instance_v2.spotted_virtual_machines[each.value.id].id
+  volume_id   = var.volumes[each.value.id].volume[0]
+}
+
+
 # Generate the output files (keypair and inventory) for ansible
 locals {
   template_keypair_init = templatefile("${path.module}/../templates/keypair.tpl", {
     keypair = openstack_compute_keypair_v2.spotted_keypair.private_key
   }
   )
-
-#  template_inventory_init = templatefile("${path.module}/templates/ansible_inventory.tpl", {
-#    connection_string_master = join("\n",
-#           formatlist("%s ansible_ssh_host=%s ansible_ssh_user=ubuntu ansible_connection=ssh",
-#                        openstack_compute_instance_v2.swarm_cluster[0].name,
-#                        openstack_compute_floatingip_v2.dockerswarm_floating_ip_master.address))
-#
-#    connection_string_workers = join("\n",
-#           formatlist("%s ansible_ssh_host=%s ansible_ssh_user=ubuntu ansible_connection=ssh\n%s ansible_ssh_host=%s ansible_ssh_user=ubuntu ansible_connection=ssh",
-#                        openstack_compute_instance_v2.swarm_cluster[1].name,
-#                        openstack_compute_floatingip_v2.dockerswarm_floating_ip_worker1.address,
-#                        openstack_compute_instance_v2.swarm_cluster[2].name,
-#                        openstack_compute_floatingip_v2.dockerswarm_floating_ip_worker2.address))
-#
-#    master_name = var.nodes[0]
-#    list_nodes = [var.nodes[1], var.nodes[2]]
-#  }
-#  )
-
 }
 
 # Final steps
-#resource "null_resource" "configure-virtualmachines-ips" {
-#  count = 3
+#resource "null_resource" "configure-virtual-machines-ips" {
+#  for_each = var.vms
 #
 #  connection {
 #    user = "ubuntu"
-#    host = openstack_compute_floatingip_v2.spotted_floating_ip[0].address
+#    host = openstack_compute_floatingip_v2.spotted_floating_ip[each.value.id].address
 #    private_key = openstack_compute_keypair_v2.spotted_keypair.private_key
 #    agent = true
 #    timeout = "3m"
@@ -156,9 +149,3 @@ resource "local_file" "keypair_file" {
   filename = "keypair"
   file_permission = "0600"
 }
-
-#resource "local_file" "ansible_inventory" {
-#  content = local.template_inventory_init
-#  filename = "../ansible/inventory.ini"
-#  file_permission = "0600"
-#}

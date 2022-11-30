@@ -31,5 +31,9 @@ override.tf.json
 # Ignore terraform lock files
 terraform/volumes/.terraform.lock.hcl
 
+# Ignore temporal generated files in servers folder
+terraform/servers/terraform.tfvars
+terraform/servers/variables.tf
+
 # IDE
 .idea
