@@ -108,10 +108,10 @@ resource "openstack_compute_floatingip_associate_v2" "associate_floating_ip" {
 # Attach volumes to the servers
 #
 resource "openstack_compute_volume_attach_v2" "attachments" {
-  for_each = var.vms
+  count = length(var.vms)
 
-  instance_id = openstack_compute_instance_v2.spotted_virtual_machines[each.value.id].id
-  volume_id   = var.volumes[each.value.id].volume[0]
+  instance_id = openstack_compute_instance_v2.spotted_virtual_machines[local.server_keys[count.index]].id
+  volume_id   = var.volumes[count.index].vol_id
 }
 
 

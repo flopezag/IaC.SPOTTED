@@ -10,13 +10,7 @@ variable "openstack_region" {}
 
 variable "openstack_domain_name" {}
 
-variable "openstack_flavor" {}
 
-%{ for volume in volume_list ~}
-%{ for volume_name, volume_id in volume ~}
-variable openstack_volume_${volume_name} {}
-%{ endfor ~}
-%{ endfor ~}
 
 variable "image" {
   default = "${openstack_image}"

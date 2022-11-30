@@ -1,19 +1,45 @@
+#
 # Definition of the OpenStack environment variables
+#
 variables:
-    - key: openstack_user_name
-      value: <openstack_user_name>
+    openstack_user_name: <openstack_user_name>
+    openstack_tenant_name: <openstack_tenant_name>
+    openstack_password: <openstack_password>
+    openstack_auth_url: <openstack_auth_url>
+    openstack_region: <openstack_region>
+    openstack_domain_name: <openstack_domain_name>
+    base_image: <base_image>
+    ssh_key_pair: <ssh_key_pair>
+    ssh_user_name: <ssh_user_name>
+    availability_zone: <availability_zone>
+    external_pool: <external_pool>
 
-    - key: openstack_tenant_name
-      value: <openstack_tenant_name>
+vms:
+  vm1:
+    id: <id>
+    name: <name>
+    description: <description>
+    flavour: <flavour>
 
-    - key: openstack_password
-      value: <openstack_password>
+  vm2:
+    id: <id>
+    name: <name>
+    description: <description>
+    flavour: <flavour>
 
-    - key: openstack_auth_url
-      value: <openstack_auth_url>
+  <...>
 
-    - key: openstack_region
-      value : <openstack_region>
+volumes:
+  vol1:
+    name: <name>
+    description: <description>
+    size: <size>
+    vm: <vm>
 
-    - key: openstack_domain_name
-      value: <openstack_domain_name>
+  vol2:
+    name: <name>
+    description: <description>
+    size: <size>
+    vm: <vm>
+
+  <...>
