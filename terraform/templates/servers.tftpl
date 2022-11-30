@@ -1,0 +1,91 @@
+variable "openstack_user_name" {}
+
+variable "openstack_tenant_name" {}
+
+variable "openstack_password" {}
+
+variable "openstack_auth_url" {}
+
+variable "openstack_region" {}
+
+variable "openstack_domain_name" {}
+
+variable "openstack_flavor" {}
+
+%{ for volume in volume_list ~}
+%{ for volume_name, volume_id in volume ~}
+variable openstack_volume_${volume_name} {}
+%{ endfor ~}
+%{ endfor ~}
+
+variable "image" {
+  default = "${openstack_image}"
+}
+
+variable "ssh_key_pair" {
+  default = "${ssh_key_pair}"
+}
+
+variable "ssh_user_name" {
+  default = "${ssh_user_name}"
+}
+
+variable "availability_zone" {
+  default = "${availability_zone}"
+}
+
+variable "external_pool" {
+  default = "${external_pool}"
+}
+
+variable "vms" {
+  description = "Virtual Machines"
+  type = map(
+    object({
+      id = string,
+      name = string,
+      description = string,
+      flavour = string
+    })
+  )
+
+  default = {
+%{ for server_key, server_value in servers_list ~}
+    ${server_key} = {
+%{ for key, value in server_value ~}
+        ${key} = "${value}"
+%{ endfor ~}
+    }
+%{ endfor ~}
+  }
+}
+
+
+variable "volumes" {
+  description = "Volumes"
+  type = map(
+    object({
+      vol_id = list(string),
+      vol_name   = string
+    })
+  )
+  default = {
+%{ for volume_key, volume_value in volume_list ~}
+    ${volume_key} = {
+%{ for key, value in volume_value ~}
+        ${key} = "${value}"
+%{ endfor ~}
+    }
+%{ endfor ~}
+
+
+    vol1 = {
+        volume_id = "d1ddaa70-d05f-410d-bced-a328cc1a3a64"
+        vm        = "vm1"
+    }
+    vol2 = {
+        volume = "f8e89c54-e017-49c2-b181-0772520dafd3"
+        vm     = "vm2"
+    }
+  }
+}
