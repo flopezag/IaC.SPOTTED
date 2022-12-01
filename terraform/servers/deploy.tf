@@ -105,17 +105,38 @@ resource "openstack_compute_floatingip_associate_v2" "associate_floating_ip" {
 
 
 #
-# Attach volumes to the servers
+# Attach volumes to the servers: 1 by 1, not 1 VM to n volumes
 #
+#resource "openstack_compute_volume_attach_v2" "attachments" {
+#  count = length(var.vms)
+#
+#  instance_id = openstack_compute_instance_v2.spotted_virtual_machines[local.server_keys[count.index]].id
+#  volume_id   = var.volumes[count.index].vol_id
+#}
 resource "openstack_compute_volume_attach_v2" "attachments" {
-  count = length(var.vms)
+  for_each = var.volumes
 
-  instance_id = openstack_compute_instance_v2.spotted_virtual_machines[local.server_keys[count.index]].id
-  volume_id   = var.volumes[count.index].vol_id
+  #    0 = {
+  #      vol_id = "8ebafc61-c2c0-4f32-ba5d-3f71c114bb5f"
+  #      vol_name = "SpottedPortal_Vol"
+  #      vol_vm = "vm1"
+  #  }
+
+  instance_id = openstack_compute_instance_v2.spotted_virtual_machines[each.value.vol_vm].id
+  volume_id   = each.value.vol_id
 }
 
+#output "volume_devices" {
+#  value = "${openstack_compute_volume_attach_v2.attachments.*.device}"
+#}
+#
+#output "volume_devices_instances" {
+#  value = "${openstack_compute_volume_attach_v2.attachments.*.instance_id}"
+#}
 
-# Generate the output files (keypair and inventory) for ansible
+#
+# Generate the output keypair file
+#
 locals {
   template_keypair_init = templatefile("${path.module}/../templates/keypair.tpl", {
     keypair = openstack_compute_keypair_v2.spotted_keypair.private_key
@@ -123,25 +144,51 @@ locals {
   )
 }
 
+#
 # Final steps
-#resource "null_resource" "configure-virtual-machines-ips" {
-#  for_each = var.vms
 #
-#  connection {
-#    user = "ubuntu"
-#    host = openstack_compute_floatingip_v2.spotted_floating_ip[each.value.id].address
-#    private_key = openstack_compute_keypair_v2.spotted_keypair.private_key
-#    agent = true
-#    timeout = "3m"
-#  }
-#
-#  provisioner "remote-exec" {
-#    inline = [
-#      "sudo apt-get update",
-#      "sudo apt-get install -y curl",
-#    ]
-#  }
-#}
+locals {
+  params = ["a", "b", "c"]
+  params_for_inline_command = join(" ", local.params)
+}
+
+output "lsdk"{
+  value = openstack_compute_volume_attach_v2.attachments[0].device
+
+}
+
+resource "null_resource" "configure-virtual-machines-ips" {
+  for_each = var.vms
+#  count = length(var.vms)
+
+  connection {
+    user = var.ssh_user_name
+    host = openstack_compute_floatingip_v2.spotted_floating_ip[each.value.id].address
+    private_key = openstack_compute_keypair_v2.spotted_keypair.private_key
+    agent = true
+    timeout = "3m"
+  }
+
+  provisioner "file" {
+    destination = "/tmp/script.sh"
+    content = templatefile("${path.module}/../templates/script.sh.tpl",
+      {
+        "params": [for k, v in var.volumes: openstack_compute_volume_attach_v2.attachments[k].device if v.vol_vm == each.value.id]
+      }
+    )
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "set -o errexit",
+      "sleep 10",
+      "echo \"Hello World!\"",
+      "chmod +x /tmp/script.sh",
+#      "/tmp/script.sh ${local.params_for_inline_command}"
+#      "rm /tmp/script.sh"
+    ]
+  }
+}
 
 
 resource "local_file" "keypair_file" {

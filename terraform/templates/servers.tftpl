@@ -74,3 +74,18 @@ variable "volumes" {
 %{ endfor ~}
   }
 }
+
+variable "volumes_dict" {
+  description = "Dictionary of volumes"
+  type        = map(list(string))
+
+  default = {
+%{ for k, v in volume_dict ~}
+    ${k} = [
+%{ for k1, v1 in v ~}
+        "${v1}",
+%{ endfor ~}
+    ]
+%{ endfor ~}
+  }
+}
