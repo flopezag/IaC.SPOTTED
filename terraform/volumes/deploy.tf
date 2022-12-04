@@ -30,22 +30,6 @@ locals {
     }
 }
 
-output "caci1" {
-  value = local.server_keys
-}
-
-output "caci2" {
-  value = module.yaml_json_multidecoder.files.config.volumes
-}
-
-output "caci3" {
-  value = local.vol_dict
-}
-
-output "index" {
-  value = index(local.vol_keys, "vol3")
-}
-
 locals {
   template_volume = templatefile("${path.module}/../templates/volume.tftpl",
     {

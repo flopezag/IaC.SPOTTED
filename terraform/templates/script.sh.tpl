@@ -6,8 +6,6 @@ ${volume}
 %{ endfor ~}
 )
 
-i=0
-
 sudo apt-get update
 sudo apt-get install -y curl
 
@@ -33,12 +31,14 @@ sudo bash -c "cat /etc/fstab >> /etc/fstab_new"
 
 
 
-
+i=0
 while [ $i -lt $${#volume[@]} ]
 do
     # Initialize the variables of the disks
     disk=$${volume[$i]}
     mount=$${volume[$i]}"1"
+    folder=`expr $i + 1`
+    folder="/data"$folder
 
     # Create the partition table of the volume
     echo "n
@@ -52,15 +52,14 @@ do
     # Create a ext3 file system in the new partition
     sudo mkfs -t ext3 $${mount}
 
-    # Mount the volume
-    sudo mkdir /data
-    sudo mount $${mount} /data
+    # Mount the volume, in one or several folders?
+    sudo mkdir $${folder}
+    sudo mount $${mount} $${folder}
 
     sudo bash -c "cat << EOM >> /etc/fstab_new
-
-    $${mount}          /data            ext3                 defaults            0           0
-
-    EOM"
+$${mount}          $${folder}            ext3                 defaults            0           0
+EOM
+"
 
     # Increment the i = i + 1
     i=`expr $i + 1`

@@ -107,32 +107,12 @@ resource "openstack_compute_floatingip_associate_v2" "associate_floating_ip" {
 #
 # Attach volumes to the servers: 1 by 1, not 1 VM to n volumes
 #
-#resource "openstack_compute_volume_attach_v2" "attachments" {
-#  count = length(var.vms)
-#
-#  instance_id = openstack_compute_instance_v2.spotted_virtual_machines[local.server_keys[count.index]].id
-#  volume_id   = var.volumes[count.index].vol_id
-#}
 resource "openstack_compute_volume_attach_v2" "attachments" {
   for_each = var.volumes
-
-  #    0 = {
-  #      vol_id = "8ebafc61-c2c0-4f32-ba5d-3f71c114bb5f"
-  #      vol_name = "SpottedPortal_Vol"
-  #      vol_vm = "vm1"
-  #  }
 
   instance_id = openstack_compute_instance_v2.spotted_virtual_machines[each.value.vol_vm].id
   volume_id   = each.value.vol_id
 }
-
-#output "volume_devices" {
-#  value = "${openstack_compute_volume_attach_v2.attachments.*.device}"
-#}
-#
-#output "volume_devices_instances" {
-#  value = "${openstack_compute_volume_attach_v2.attachments.*.instance_id}"
-#}
 
 #
 # Generate the output keypair file
@@ -145,21 +125,10 @@ locals {
 }
 
 #
-# Final steps
+# Final step, configure volume(s) and mount them
 #
-locals {
-  params = ["a", "b", "c"]
-  params_for_inline_command = join(" ", local.params)
-}
-
-output "lsdk"{
-  value = openstack_compute_volume_attach_v2.attachments[0].device
-
-}
-
 resource "null_resource" "configure-virtual-machines-ips" {
   for_each = var.vms
-#  count = length(var.vms)
 
   connection {
     user = var.ssh_user_name
@@ -184,8 +153,7 @@ resource "null_resource" "configure-virtual-machines-ips" {
       "sleep 10",
       "echo \"Hello World!\"",
       "chmod +x /tmp/script.sh",
-#      "/tmp/script.sh ${local.params_for_inline_command}"
-#      "rm /tmp/script.sh"
+      "rm /tmp/script.sh"
     ]
   }
 }
