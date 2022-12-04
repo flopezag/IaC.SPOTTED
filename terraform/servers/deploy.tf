@@ -153,6 +153,7 @@ resource "null_resource" "configure-virtual-machines-ips" {
       "sleep 10",
       "echo \"Hello World!\"",
       "chmod +x /tmp/script.sh",
+      "/tmp/script.sh",
       "rm /tmp/script.sh"
     ]
   }
