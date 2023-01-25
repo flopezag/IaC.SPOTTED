@@ -74,6 +74,7 @@ resource "openstack_compute_floatingip_v2" "spotted_floating_ip" {
 # Create the VM Instances for SPOTTED
 #
 resource "openstack_compute_instance_v2" "spotted_virtual_machines" {
+  depends_on = [openstack_networking_router_interface_v2.spotted_router_interface]
   for_each = var.vms
 
   name = each.value.name
@@ -105,9 +106,12 @@ resource "openstack_compute_floatingip_associate_v2" "associate_floating_ip" {
 
 
 #
-# Attach volumes to the servers: 1 by 1, not 1 VM to n volumes
+# Attach volumes to the servers: 1 VM to n volumes
 #
 resource "openstack_compute_volume_attach_v2" "attachments" {
+  vendor_options {
+    ignore_volume_confirmation = true
+  }
   for_each = var.volumes
 
   instance_id = openstack_compute_instance_v2.spotted_virtual_machines[each.value.vol_vm].id

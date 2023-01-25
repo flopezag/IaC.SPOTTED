@@ -35,6 +35,7 @@ terraform/servers/.terraform.lock.hcl
 # Ignore temporal generated files in servers folder
 terraform/servers/terraform.tfvars
 terraform/servers/variables.tf
+terraform/servers/keypair
 
 # IDE
 .idea
